@@ -1,4 +1,4 @@
-name: Prebuilt APKs updater
+name: Prebuild APKs updater
 
 on:
   workflow_dispatch:
