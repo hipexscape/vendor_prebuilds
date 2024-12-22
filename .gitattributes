@@ -1,0 +1,2 @@
+DotGallery/DotGallery.apk filter=lfs diff=lfs merge=lfs -text
+BCR/BCR.apk filter=lfs diff=lfs merge=lfs -text
