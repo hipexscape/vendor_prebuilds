@@ -90,7 +90,7 @@ jobs:
         run: |
           git config --local user.email "doremon.3181@gmail.com"
           git config --local user.name "ThehipexscapeBot"
-          curl -sL "https://raw.githubusercontent.com/hipexscape/Scripts/tsm/commit_id.sh" | bash
+          curl -Lo .git/hooks/commit-msg https://raw.githubusercontent.com/hipexscape/Scripts/tsm/commit_id.sh && chmod +x .git/hooks/commit-msg && git config --global core.hooksPath .git/hooks
 
           if [ -n "$(git status --porcelain)" ]; then
             UPDATED_APPS=$(echo $UPDATED_APPS | sed 's/,$//')
