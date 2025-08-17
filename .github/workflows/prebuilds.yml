@@ -54,7 +54,7 @@ jobs:
           mv -f extracted/system/priv-app/com.chiller3.bcr/app-release.apk BCR/ || true
 
       - name: Rename BCR.apk
-        run: mv -f BCR/app-release.apk BCR/BCR.apk
+        run: mv -f BCR/app-release.apk BCR/BCR.apk || true
 
       - name: Clean up
         run: rm -rf BCR*.zip extracted/
@@ -90,14 +90,16 @@ jobs:
         run: |
           git config --local user.email "doremon.3181@gmail.com"
           git config --local user.name "ThehipexscapeBot"
-          curl -Lo .git/hooks/commit-msg https://raw.githubusercontent.com/hipexscape/Scripts/tsm/commit_id.sh && chmod +x .git/hooks/commit-msg && git config --global core.hooksPath .git/hooks
+          curl -Lo .git/hooks/commit-msg https://raw.githubusercontent.com/hipexscape/Scripts/tsm/commit_id.sh && chmod +x .git/hooks && git config --global core.hooksPath .git/hooks
 
-          if [ -n "$(git status --porcelain)" ]; then
+          # Commit only if there are changes, otherwise exit 0
+          if ! git diff --quiet || ! git diff --cached --quiet; then
             UPDATED_APPS=$(echo $UPDATED_APPS | sed 's/,$//')
             git add .
             git commit -sm "prebuilds: Incorporate latest $UPDATED_APPS improvements"
           else
             echo "No changes to commit."
+            exit 0
           fi
 
       - name: Push Changes
