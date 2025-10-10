@@ -9,7 +9,7 @@ To Include DotGallery:
 
 Add the following line to your device's droidx_device.mk file:
 ```bash
-TARGET_BUILD_DOTGALLERY := true
+TARGET_INCLUDE_DOTGALLERY := true
 ```
 
 To Include BCR (Basic Call Recorder):
