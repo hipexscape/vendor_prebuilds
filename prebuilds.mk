@@ -20,9 +20,11 @@ PRODUCT_COPY_FILES += \
 endif
 
 # Basic Call Recorder
+ifeq ($(TARGET_INCLUDE_BCR),true)
 PRODUCT_PACKAGES += \
    BCR
 
 PRODUCT_COPY_FILES += \
    vendor/prebuilds/permissions/privapp-permissions-com.chiller3.bcr.xml:$(TARGET_COPY_OUT_PRODUCT)/etc/permissions/privapp-permissions-com.chiller3.bcr.xml \
    vendor/prebuilds/etc/sysconfig/config-com.chiller3.bcr.xml:$(TARGET_COPY_OUT_PRODUCT)/etc/sysconfig/config-com.chiller3.bcr.xml
+endif

@@ -11,3 +11,11 @@ Add the following line to your device's droidx_device.mk file:
 ```bash
 TARGET_BUILD_DOTGALLERY := true
 ```
+
+To Include BCR (Basic Call Recorder):
+---------------------
+
+Add the following line to your device's droidx_device.mk file:
+```bash
+TARGET_INCLUDE_BCR := true
+```
