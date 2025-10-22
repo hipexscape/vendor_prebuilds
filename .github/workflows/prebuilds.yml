@@ -32,12 +32,16 @@ jobs:
           latest: true
           fileName: "*universal.apk"
 
-      - name: Move APKs
+      - name: Process and Move DotGallery APK
         run: |
-          rm -f *nomaps*.apk
-          rm -f $(ls Gallery*.apk | grep -v "universal")
+          ls -1
+          APK_FILE=$(find . -maxdepth 1 -name "Gallery*universal.apk" ! -name "*nomaps*")
+          if [ $(echo "$APK_FILE" | wc -l) -ne 1 ]; then
+            echo "Error: Found multiple or no universal APKs to move."
+            exit 1
+          fi
           mkdir -p DotGallery
-          mv -f Gallery*.apk DotGallery/DotGallery.apk
+          mv -f "$APK_FILE" DotGallery/DotGallery.apk
 
       - name: Download latest release .zip
         uses: robinraju/release-downloader@v1.8
@@ -93,7 +97,6 @@ jobs:
           git config --local user.name "ThehipexscapeBot"
           curl -Lo .git/hooks/commit-msg https://raw.githubusercontent.com/hipexscape/Scripts/tsm/commit_id.sh && chmod +x .git/hooks && git config --global core.hooksPath .git/hooks
 
-          # Commit only if there are changes, otherwise exit 0
           if ! git diff --quiet || ! git diff --cached --quiet; then
             UPDATED_APPS=$(echo $UPDATED_APPS | sed 's/,$//')
             git add .
