@@ -30,7 +30,7 @@ jobs:
         with:
           repository: "IacobIonut01/Gallery"
           latest: true
-          fileName: "*.apk"
+          fileName: "*universal.apk"
 
       - name: Move APKs
         run: |
