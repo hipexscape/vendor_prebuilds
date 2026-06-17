@@ -19,7 +19,7 @@ jobs:
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:
-          distribution: "adopt"
+          distribution: "temurin"
           java-version: "11"
 
       - name: Install Git LFS
@@ -28,79 +28,89 @@ jobs:
       - name: Download DotGallery APK
         uses: robinraju/release-downloader@v1.8
         with:
-          repository: "IacobIonut01/Gallery"
+          repository: "IacobIonut01/ReFra"
           latest: true
-          fileName: "*universal.apk"
+          fileName: "*NoML-universal-release.apk"
+          out-file-path: downloads
 
       - name: Process and Move DotGallery APK
         run: |
-          ls -1
-          APK_FILE=$(find . -maxdepth 1 -name "Gallery*universal.apk" ! -name "*nomaps*" | sort | tail -n 1)
+          mkdir -p DotGallery
+
+          APK_FILE=$(find downloads -name "*NoML-universal-release.apk" | head -n1)
+
           if [ -z "$APK_FILE" ]; then
-            echo "Error: No suitable universal APK found."
+            echo "Error: No suitable APK found."
             exit 1
           fi
-          mkdir -p DotGallery
+
           mv -f "$APK_FILE" DotGallery/DotGallery.apk
-          rm -f Gallery*.apk
+          rm -rf downloads
 
       - name: Download latest release .zip
         uses: robinraju/release-downloader@v1.8
         with:
           repository: "chenxiaolong/BCR"
           latest: true
-          fileName: BCR*.zip
+          fileName: "BCR*.zip"
 
       - name: Extract BCR*.zip
         run: unzip BCR*.zip -d extracted
 
       - name: Move app-release.apk to BCR directory
         run: |
-          shopt -s nullglob
-          mv -f extracted/system/priv-app/com.chiller3.bcr/app-release.apk BCR/ || true
+          mkdir -p BCR
+          mv -f extracted/system/priv-app/com.chiller3.bcr/app-release.apk BCR/
 
       - name: Rename BCR.apk
-        run: mv -f BCR/app-release.apk BCR/BCR.apk || true
+        run: |
+          mv -f BCR/app-release.apk BCR/BCR.apk
 
       - name: Clean up
         run: rm -rf BCR*.zip extracted/
-        
-      - name: Check for Updated Apps
-        id: check_updates
-        run: |
-          CHANGED_FILES=$(git diff --name-only)
-          UPDATED_APPS=""
-          if echo "$CHANGED_FILES" | grep -q "DotGallery"; then
-            UPDATED_APPS+="DotGallery, "
-          fi
-          if echo "$CHANGED_FILES" | grep -q "BCR"; then
-            UPDATED_APPS+="BCR, "
-          fi
-          if [ -n "$UPDATED_APPS" ]; then
-            echo "UPDATED_APPS=$UPDATED_APPS" >> $GITHUB_ENV
-          else
-            echo "No apps updated, skipping further steps."
-            exit 0
-          fi
 
       - name: Track APKs using Git LFS
         run: |
-          find . -type f -name "*.apk" -exec git lfs track {} \;
+          git lfs track "*.apk"
           git add .gitattributes
-          git lfs ls-files
+
+      - name: Check for Updated Apps
+        run: |
+          git add .
+
+          CHANGED_FILES=$(git diff --cached --name-only)
+          UPDATED_APPS=""
+
+          if echo "$CHANGED_FILES" | grep -q "^DotGallery/"; then
+            UPDATED_APPS+="DotGallery, "
+          fi
+
+          if echo "$CHANGED_FILES" | grep -q "^BCR/"; then
+            UPDATED_APPS+="BCR, "
+          fi
+
+          UPDATED_APPS=$(echo "$UPDATED_APPS" | sed 's/, $//')
+
+          if [ -z "$UPDATED_APPS" ]; then
+            echo "No apps updated."
+            exit 0
+          fi
+
+          echo "UPDATED_APPS=$UPDATED_APPS" >> $GITHUB_ENV
 
       - name: Commit Changes
         run: |
           git config --local user.email "doremon.3181@gmail.com"
           git config --local user.name "ThehipexscapeBot"
-          curl -Lo .git/hooks/commit-msg https://raw.githubusercontent.com/hipexscape/Scripts/tsm/commit_id.sh && chmod +x .git/hooks && git config --global core.hooksPath .git/hooks
-          if ! git diff --quiet || ! git diff --cached --quiet; then
-            UPDATED_APPS=$(echo $UPDATED_APPS | sed 's/,$//')
-            git add .
+
+          curl -Lo .git/hooks/commit-msg https://raw.githubusercontent.com/hipexscape/Scripts/tsm/commit_id.sh
+          chmod +x .git/hooks/commit-msg
+          git config --global core.hooksPath .git/hooks
+
+          if ! git diff --cached --quiet; then
             git commit -sm "prebuilds: Incorporate latest $UPDATED_APPS improvements"
           else
             echo "No changes to commit."
-            exit 0
           fi
 
       - name: Push Changes
